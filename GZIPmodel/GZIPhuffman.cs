@@ -264,18 +264,15 @@ namespace GZIPmodel
         /// <returns>编码</returns>
         public string GZIPcoding(string buf)
         {
-            //压缩标志   如 (gzip)a:12|b:32(gzip)
-            var tmp = new StringBuilder();                     //生成压缩标志
+            //压缩标志   如 a:12|b:32(gzip)
+            var GZIPflag = "";
             foreach (var item in mValueWeight)
             {
-                tmp.Append(item.Key + ":" + item.Value + "|");
+                var vasb = item.Value.ToString().Aggregate("", (current, vas) => current + DtoB(vas));
+                GZIPflag += DtoB(item.Key) + DtoB(':') + vasb + DtoB('|');
             }
-            tmp.Append("(gzip)");
-            var GZIPflag = "";
-            for (var i = 0; i < tmp.Length; i++)
-            {
-                GZIPflag += DtoB(tmp[i]);
-            }
+            const string flag = "(gzip)";
+            GZIPflag = flag.Aggregate(GZIPflag, (current, i) => current + DtoB(i));
             var result = GZIPflag;              //把压缩标志放入二进制数据前
             return buf.Select(CharToCode).Aggregate(result, (current, s) => current + s);
         }

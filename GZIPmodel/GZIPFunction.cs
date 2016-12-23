@@ -193,6 +193,7 @@ namespace GZIPmodel
             var match = Regex.Match(Par, "(.{0,1}|\\n):(\\d+)\\|");          //通过正则匹配huffman树的key和value
             while (match.Success)
             { 
+                
                 var Key = match.Groups[1].Value[0];
                 var Value = uint.Parse(match.Groups[2].Value);
                 mDictionary.Add(Key , Value);                           //构造字典
