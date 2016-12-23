@@ -11,6 +11,53 @@ namespace GZIPmodel
     {
 
         /// <summary>
+        /// 获取文本的编码格式
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <returns></returns>
+        public static Encoding GetFileEncodeType(string filename)
+        {
+            FileStream fs = new FileStream(filename, FileMode.Open, FileAccess.Read);
+            BinaryReader br = new BinaryReader(fs);
+            Byte[] buffer = br.ReadBytes(2);
+            if (buffer[0] >= 0xEF)
+            {
+                if (buffer[0] == 0xEF && buffer[1] == 0xBB)
+                {
+                    return Encoding.UTF8;
+                }
+                if (buffer[0] == 0xFE && buffer[1] == 0xFF)
+                {
+                    return Encoding.BigEndianUnicode;
+                }
+                if (buffer[0] == 0xFF && buffer[1] == 0xFE)
+                {
+                    return Encoding.Unicode;
+                }
+                return Encoding.Default;
+            }
+            return Encoding.Default;
+        }
+
+
+        /// <summary>
+        /// 转换非unicode文本为unicode文本
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        private static void EncodingToUnicode(string path)
+        {
+            var sb = new StringBuilder();
+            using (var sr = new StreamReader(path , GetFileEncodeType(path) , false))
+            {
+                 sb.Append(sr.ReadToEnd());
+            }
+            
+
+
+        }
+
+        /// <summary>
         /// 由八位字符串转化为无符号整形数据
         /// </summary>
         /// <param name="str"></param>
@@ -90,7 +137,8 @@ namespace GZIPmodel
         /// <param name="writeFilePath">要存储的文件全路径</param>
         public static void GZIP(string readFilePath, string writeFilePath)
         {
-            using (var streamReader = new StreamReader(readFilePath , Encoding.Unicode , false))
+            
+            using (var streamReader = new StreamReader(readFilePath , GetFileEncodeType(readFilePath) , false))
             {
                 var str = streamReader.ReadToEnd();
                 Regex.Replace(str, "[\r\n]", "\n");
