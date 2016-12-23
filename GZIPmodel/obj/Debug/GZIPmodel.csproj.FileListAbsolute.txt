@@ -1,0 +1,6 @@
+D:\VisualStudio Project\GZIP\GZIPmodel\bin\Debug\GZIPmodel.exe.config
+D:\VisualStudio Project\GZIP\GZIPmodel\bin\Debug\GZIPmodel.exe
+D:\VisualStudio Project\GZIP\GZIPmodel\bin\Debug\GZIPmodel.pdb
+D:\VisualStudio Project\GZIP\GZIPmodel\obj\Debug\GZIPmodel.csprojResolveAssemblyReference.cache
+D:\VisualStudio Project\GZIP\GZIPmodel\obj\Debug\GZIPmodel.exe
+D:\VisualStudio Project\GZIP\GZIPmodel\obj\Debug\GZIPmodel.pdb
