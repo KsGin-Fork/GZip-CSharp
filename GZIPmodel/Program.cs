@@ -5,10 +5,35 @@ namespace GZIPmodel
 {
     internal class Program
     {
-        private static void Main()
+        private static void Main(string[] args)
         {
-            GZIPFunction.GZIP(@"C: \Users\KsGin\Desktop\Test1.txt" , @"C: \Users\KsGin\Desktop\Test2.gzip");
-            GZIPFunction.UNGZIP(@"C: \Users\KsGin\Desktop\Test2.gzip", @"C: \Users\KsGin\Desktop\Test3.txt");
+            if (args[0] == "gzip")
+            {
+                try
+                {
+                    GZIPFunction.GZIP(args[1], args[2]);
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("输入参数有误");
+                }
+            }
+            else if (args[0] == "ungizp")
+            {
+                try
+                {
+                    GZIPFunction.UNGZIP(args[1], args[2]);
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("输入参数有误");
+                }
+            }
+            else
+            {
+                Console.WriteLine("找不到此命令");
+            }
+            
             Console.Read();
         }
     }
