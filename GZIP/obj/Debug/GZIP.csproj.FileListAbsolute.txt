@@ -11,3 +11,10 @@ D:\VisualStudio Project\GZIP\GZIP\obj\Debug\GZIP.Properties.Resources.resources
 D:\VisualStudio Project\GZIP\GZIP\obj\Debug\GZIP.csproj.GenerateResource.Cache
 D:\VisualStudio Project\GZIP\GZIP\obj\Debug\GZIP.exe
 D:\VisualStudio Project\GZIP\GZIP\obj\Debug\GZIP.pdb
+D:\VisualStudio Project\GZIP\GZIP\obj\Debug\PromPtWindow.g.cs
+D:\VisualStudio Project\GZIP\GZIP\obj\Debug\PromPtWindow.baml
+D:\VisualStudio Project\GZIP\GZIP\obj\Debug\Waitting.baml
+D:\VisualStudio Project\GZIP\GZIP\obj\Debug\Waitting.g.cs
+D:\VisualStudio Project\GZIP\GZIP\obj\Debug\MessagePage.g.cs
+D:\VisualStudio Project\GZIP\GZIP\obj\Debug\GZIP_MarkupCompile.lref
+D:\VisualStudio Project\GZIP\GZIP\obj\Debug\MessagePage.baml

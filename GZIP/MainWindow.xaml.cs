@@ -1,17 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using GZIPmodel;
 using Microsoft.Win32;
 
@@ -24,10 +13,12 @@ namespace GZIP
     {
         private string readFilePath; //输入文件路径
         private string writeFilePath; //输出文件路径
+        private PromPtWindow promPtWindow; 
 
         public MainWindow()
         {
             InitializeComponent();
+            WindowStartupLocation = WindowStartupLocation.CenterScreen;
         }
 
         /// <summary>
@@ -97,14 +88,23 @@ namespace GZIP
             writeFilePath = ZIPpathTo.Text;
             try
             {
-                GZIPFunction.GZIP(readFilePath , writeFilePath);
+                new Thread(() =>
+                {
+                    GZIPFunction.GZIP(readFilePath, writeFilePath); 
+                    Dispatcher.Invoke(() =>
+                    {
+                        promPtWindow.Content = new MessagePage("压缩完毕");
+                    });
+                }).Start();
+                promPtWindow = new PromPtWindow {Content = new Waitting("正在压缩")};
+                promPtWindow.ShowDialog();
+
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
                 return;
             }
-            MessageBox.Show("压缩完毕");
         }
 
         /// <summary>
@@ -118,14 +118,22 @@ namespace GZIP
             writeFilePath = UNZIPpathTo.Text;
             try
             {
-                GZIPFunction.UNGZIP(readFilePath, writeFilePath);
+                new Thread(() =>
+                {
+                    GZIPFunction.UNGZIP(readFilePath, writeFilePath);
+                    Dispatcher.Invoke(() =>
+                    {
+                        promPtWindow.Content = new MessagePage("解压完毕");
+                    });
+                }).Start();
+                promPtWindow = new PromPtWindow { Content = new Waitting("正在解压") };
+                promPtWindow.ShowDialog();
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
                 return;
             }
-            MessageBox.Show("解压缩完毕");
         }
     }
 }

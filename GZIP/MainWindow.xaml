@@ -29,7 +29,7 @@
                             <TextBox Margin="3" Width="200" FontSize="15" Name="ZIPpathTo"/>
                             <Button Margin="3" Width="80" FontSize="15" Content="浏览" Name="ZIPpathToSelectButton" Click="ZIPpathToSelectButton_OnClick"/>
                         </StackPanel>
-                        <StackPanel Margin="10" HorizontalAlignment="Right">
+                        <StackPanel Margin="10" HorizontalAlignment="Right" Orientation="Horizontal">
                             <Button Content="压缩" Width="100" FontSize="20" Height="40" Name="ZIP" Click="ZIP_OnClick"></Button>
                         </StackPanel>
                     </StackPanel>
