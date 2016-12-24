@@ -1,0 +1,13 @@
+D:\VisualStudio Project\GZIP\GZIP\bin\Debug\GZIP.exe.config
+D:\VisualStudio Project\GZIP\GZIP\bin\Debug\GZIP.exe
+D:\VisualStudio Project\GZIP\GZIP\bin\Debug\GZIP.pdb
+D:\VisualStudio Project\GZIP\GZIP\obj\Debug\GZIP.csprojResolveAssemblyReference.cache
+D:\VisualStudio Project\GZIP\GZIP\obj\Debug\MainWindow.g.cs
+D:\VisualStudio Project\GZIP\GZIP\obj\Debug\App.g.cs
+D:\VisualStudio Project\GZIP\GZIP\obj\Debug\GZIP_MarkupCompile.cache
+D:\VisualStudio Project\GZIP\GZIP\obj\Debug\MainWindow.baml
+D:\VisualStudio Project\GZIP\GZIP\obj\Debug\GZIP.g.resources
+D:\VisualStudio Project\GZIP\GZIP\obj\Debug\GZIP.Properties.Resources.resources
+D:\VisualStudio Project\GZIP\GZIP\obj\Debug\GZIP.csproj.GenerateResource.Cache
+D:\VisualStudio Project\GZIP\GZIP\obj\Debug\GZIP.exe
+D:\VisualStudio Project\GZIP\GZIP\obj\Debug\GZIP.pdb

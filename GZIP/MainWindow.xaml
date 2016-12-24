@@ -3,10 +3,64 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:GZIP"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
-    <Grid>
-        
-    </Grid>
+        Title="GZIP" Height="500" Width="850">
+    <Viewbox Stretch="Fill">
+        <Grid Height="300" Width="550">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Border Grid.Row="0" BorderThickness="3" BorderBrush="DarkBlue"  Background="Aquamarine" CornerRadius="5" Margin="1">
+                <Grid Name="GZIP">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="4*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="30">压缩</Label>
+                    <StackPanel Margin="5" Grid.Column="1" Orientation="Vertical">
+                        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                            <Label Margin="3" FontSize="15" Content="输入文件地址:" />
+                            <TextBox Margin="3" Width="200" FontSize="15" Name="ZIPpathFrom"/>
+                            <Button Margin="3" Width="80" FontSize="15" Content="浏览" Name="ZIPpathFromSelectButton" Click="ZIPpathFromSelectButton_OnClick"/>
+                        </StackPanel>
+                        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                            <Label Margin="3" FontSize="15" Content="输出文件地址:" Name="ZIPpathToText"/>
+                            <TextBox Margin="3" Width="200" FontSize="15" Name="ZIPpathTo"/>
+                            <Button Margin="3" Width="80" FontSize="15" Content="浏览" Name="ZIPpathToSelectButton" Click="ZIPpathToSelectButton_OnClick"/>
+                        </StackPanel>
+                        <StackPanel Margin="10" HorizontalAlignment="Right">
+                            <Button Content="压缩" Width="100" FontSize="20" Height="40" Name="ZIP" Click="ZIP_OnClick"></Button>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </Border>
+            <Border Grid.Row="1" BorderThickness="3" BorderBrush="Chartreuse"  Background="Coral" Margin="1">
+                <Grid Name="UNGZIP">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="4*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="MintCream"  FontSize="30">解压缩</Label>
+                    <StackPanel Margin="5" Grid.Column="1" Orientation="Vertical">
+                        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                            <Label Margin="3" FontSize="15" Content="输入文件地址:"/>
+                            <TextBox Margin="3" Width="200" FontSize="15" Name="UNZIPpathFrom"/>
+                            <Button Margin="3" Width="80" FontSize="15" Content="浏览" Name="UNZIPpathFromSelectButton" Click="UNZIPpathFromSelectButton_OnClick"/>
+                        </StackPanel>
+                        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                            <Label Margin="3" FontSize="15" Content="输出文件地址:"/>
+                            <TextBox Margin="3" Width="200" FontSize="15" Name="UNZIPpathTo"/>
+                            <Button Margin="3" Width="80" FontSize="15" Content="浏览" Name="UNZIPpathToSelectButton" Click="UNZIPpathToSelectButton_OnClick"/>
+                        </StackPanel>
+                        <StackPanel Margin="10" HorizontalAlignment="Right">
+                            <Button Content="解压缩" FontSize="20" Width="100" Height="40" Name="UNZIP" Click="UNZIP_OnClick"></Button>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </Border>
+            
+        </Grid>
+    </Viewbox>
+    
 </Window>
