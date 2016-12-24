@@ -102,6 +102,8 @@ namespace GZIPmodel
         /// <param name="writeFilePath">要存储的文件全路径</param>
         public static void GZIP(string readFilePath, string writeFilePath)
         {
+            var start = Environment.TickCount;
+            var cur = Environment.TickCount;
             //用于存储压缩信息和存储压缩码的数据结构
             var codingpar = new Dictionary<char, uint>();
             var bytes = new List<byte>();
@@ -114,10 +116,10 @@ namespace GZIPmodel
                 sr.Close();
                 Console.WriteLine("读入文件成功......");
             }
-            
             //将文中的windows换行标准格式\r\n 替换为 \n
             str = Regex.Replace(str, "\r\n", "\n");
 
+            start = Environment.TickCount;
             //使用文本文件读取的字符串构造huffman
             Console.WriteLine("开始压缩......");
             var huff = new GZIPhuffman(str);
@@ -137,7 +139,11 @@ namespace GZIPmodel
                 }
             }
             bytes.Add(StringToUint(b.Substring(b.Length - b.Length % 8)));
-            Console.WriteLine("压缩完毕......");
+            Console.Write("压缩完毕......");
+
+            cur = Environment.TickCount;
+            Console.WriteLine("花费时间{0}毫秒", cur - start);
+
             Console.WriteLine("正在保存......");
             
             //制作解压参数
@@ -166,7 +172,11 @@ namespace GZIPmodel
         /// <param name="writeFilePath">要存储的文件全路径</param>
         public static void UNGZIP(string readFilePath, string writeFilePath)
         {
-            
+
+            var start = Environment.TickCount;
+            var cur = Environment.TickCount;
+
+
             var encoding = GetFileEncodeType(readFilePath);
             var fs = new FileStream(readFilePath, FileMode.Open);
             var bs = new BufferedStream(fs);
@@ -205,10 +215,17 @@ namespace GZIPmodel
             //权值字典建立huffman
             Console.WriteLine("开始还原压缩树......");
             var huff = new GZIPhuffman(valueWeight);
-            Console.WriteLine("开始解压......");
-            var result = huff.GZIPtranslate(sbCod.ToString());
-            
 
+            start = Environment.TickCount;
+
+            Console.Write("开始解压......");
+            var result = huff.GZIPtranslate(sbCod.ToString());
+            result = Regex.Replace(result, "\n", "\r\n");
+
+            cur = Environment.TickCount;
+
+            Console.WriteLine("花费时间{0}毫秒", cur - start);
+            
             //写入应用
             Console.WriteLine("正在写入文件......");
             var ifs = new FileStream(writeFilePath , FileMode.Create , FileAccess.Write);

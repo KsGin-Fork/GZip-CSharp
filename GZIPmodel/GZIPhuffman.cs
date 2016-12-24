@@ -34,12 +34,12 @@ namespace GZIPmodel
             /// <summary>
             /// 左子节点
             /// </summary>
-            internal GZIPhuffmanNode mLNode;
+            internal readonly GZIPhuffmanNode mLNode;
 
             /// <summary>
             /// 右子节点
             /// </summary>
-            internal GZIPhuffmanNode mRNode;
+            internal readonly GZIPhuffmanNode mRNode;
 
             /// <summary>
             /// 构造方法
@@ -233,13 +233,14 @@ namespace GZIPmodel
         /// <returns>编码</returns>
         public string GZIPcoding(string buf , ref Dictionary<char , uint> parm)
         {
+            var lb = new List<char>(buf);
             if (parm == null) throw new ArgumentNullException(nameof(parm));
             parm = mValueWeight;
-            var sb = new StringBuilder();
-            foreach (var s in buf)
+            var sb = new StringBuilder();          
+            lb.ForEach(e =>
             {
-                sb.Append(mTransTable[s]);
-            }
+                sb.Append(mTransTable[e]);
+            });
             return sb.ToString();
 
         }
@@ -252,22 +253,23 @@ namespace GZIPmodel
         public string GZIPtranslate(string code)
         {
             var lc = new List<char>(code);
-            var result = new StringBuilder();
+            var re = new List<char>();
             var Ky = new List<char>(mTransTable.Keys);
             var Vy = new List<string>(mTransTable.Values);
-            var tmp = new StringBuilder("");
-            foreach (var t in lc)
+            var tmp = new List<char>();
+
+            lc.ForEach(e =>                                       
             {
                 int index;
                 if ((index = Vy.IndexOf(tmp.ToString())) >= 0)
                 {
-                    result.Append(Ky[index]);
+                    re.Add(Ky[index]);
                     tmp.Clear();
                 }
-                tmp.Append(t);
-            }
-            
-            return result.ToString();
+                tmp.Add(e);
+            });
+                                    
+            return re.ToString();
         }
     }
 }
