@@ -116,26 +116,28 @@ namespace GZIPmodel
         /// <summary>
         /// 递归创建huffman树节点
         /// </summary>
-        private void CreatHuffmanNode(List<bool> isCreated , List<uint> WeightList)
-        {            
-            var fMinIndex = IndexOfWeightMin(isCreated , WeightList);
-            if (fMinIndex == -1) return;
-            isCreated[fMinIndex] = true;
-            var sMinIndex = IndexOfWeightMin(isCreated , WeightList);
-            if (sMinIndex == -1) return;
-            isCreated[sMinIndex] = true;
-            var newNode = new GZIPhuffmanNode(null , mHuffmaGziPhuffmanNodes[fMinIndex] , mHuffmaGziPhuffmanNodes[sMinIndex]);
-            //isCreated里添加新项
-            isCreated.Add(false);
-            //weightlist里添加新项
-            WeightList.Add(WeightList[fMinIndex] + WeightList[sMinIndex]);            
-            //设置fMin 和 sMin的双亲节点
-            mHuffmaGziPhuffmanNodes[fMinIndex].mPNode = newNode;
-            mHuffmaGziPhuffmanNodes[sMinIndex].mPNode = newNode;
-            //mHuffmaGziPhuffmanNodes里添加新项
-            mHuffmaGziPhuffmanNodes.Add(newNode);
-            //递归处理
-            CreatHuffmanNode(isCreated , WeightList);
+        private void CreatHuffmanNode(List<bool> isCreated, List<uint> WeightList)
+        {
+            while (true)
+            {
+                var fMinIndex = IndexOfWeightMin(isCreated, WeightList);
+                if (fMinIndex == -1) return;
+                isCreated[fMinIndex] = true;
+                var sMinIndex = IndexOfWeightMin(isCreated, WeightList);
+                if (sMinIndex == -1) return;
+                isCreated[sMinIndex] = true;
+                var newNode = new GZIPhuffmanNode(null, mHuffmaGziPhuffmanNodes[fMinIndex], mHuffmaGziPhuffmanNodes[sMinIndex]);
+                //isCreated里添加新项
+                isCreated.Add(false);
+                //weightlist里添加新项
+                WeightList.Add(WeightList[fMinIndex] + WeightList[sMinIndex]);
+                //设置fMin 和 sMin的双亲节点
+                mHuffmaGziPhuffmanNodes[fMinIndex].mPNode = newNode;
+                mHuffmaGziPhuffmanNodes[sMinIndex].mPNode = newNode;
+                //mHuffmaGziPhuffmanNodes里添加新项
+                mHuffmaGziPhuffmanNodes.Add(newNode);
+                //递归处理
+            }
         }
 
         /// <summary>
@@ -253,20 +255,20 @@ namespace GZIPmodel
         public string GZIPtranslate(string code)
         {
             var lc = new List<char>(code);
-            var re = new List<char>();
+            var re = new StringBuilder();
             var Ky = new List<char>(mTransTable.Keys);
             var Vy = new List<string>(mTransTable.Values);
-            var tmp = new List<char>();
+            var tmp = new StringBuilder();
 
             lc.ForEach(e =>                                       
             {
                 int index;
                 if ((index = Vy.IndexOf(tmp.ToString())) >= 0)
                 {
-                    re.Add(Ky[index]);
+                    re.Append(Ky[index]);
                     tmp.Clear();
                 }
-                tmp.Add(e);
+                tmp.Append(e); 
             });
                                     
             return re.ToString();
