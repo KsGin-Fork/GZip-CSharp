@@ -18,7 +18,7 @@ namespace GZIPmodel
                     Console.WriteLine("输入参数有误");
                 }
             }
-            else if (args[0] == "ungizp")
+            else if (args[0] == "ungzip")
             {
                 try
                 {
