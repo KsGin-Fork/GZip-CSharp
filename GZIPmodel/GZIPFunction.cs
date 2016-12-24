@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -17,44 +16,36 @@ namespace GZIPmodel
         /// <returns></returns>
         public static Encoding GetFileEncodeType(string filename)
         {
-            FileStream fs = new FileStream(filename, FileMode.Open, FileAccess.Read);
-            BinaryReader br = new BinaryReader(fs);
-            Byte[] buffer = br.ReadBytes(2);
+            var fs = new FileStream(filename, FileMode.Open, FileAccess.Read);
+            var br = new BinaryReader(fs);
+            var buffer = br.ReadBytes(2);
             if (buffer[0] >= 0xEF)
             {
                 if (buffer[0] == 0xEF && buffer[1] == 0xBB)
                 {
+                    fs.Close();
+                    br.Close();
                     return Encoding.UTF8;
                 }
                 if (buffer[0] == 0xFE && buffer[1] == 0xFF)
                 {
+                    fs.Close();
+                    br.Close();
                     return Encoding.BigEndianUnicode;
                 }
                 if (buffer[0] == 0xFF && buffer[1] == 0xFE)
                 {
+                    fs.Close();
+                    br.Close();
                     return Encoding.Unicode;
                 }
+                fs.Close();
+                br.Close();
                 return Encoding.Default;
             }
+            fs.Close();
+            br.Close();
             return Encoding.Default;
-        }
-
-
-        /// <summary>
-        /// 转换非unicode文本为unicode文本
-        /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        private static void EncodingToUnicode(string path)
-        {
-            var sb = new StringBuilder();
-            using (var sr = new StreamReader(path , GetFileEncodeType(path) , false))
-            {
-                 sb.Append(sr.ReadToEnd());
-            }
-            
-
-
         }
 
         /// <summary>
@@ -81,32 +72,6 @@ namespace GZIPmodel
             }
             return number;
         }
-
-        /// <summary>
-        /// 由16位二进制字符串转化为unicode字符
-        /// </summary>
-        /// <param name="str"></param>
-        /// <returns></returns>
-        private static int StringToChar(string str)
-        {
-            var number = 0;
-            if (str.Length < 16)          //不足16位补足16位
-            {
-                for (var i = str.Length; i < 16; i++)
-                {
-                    str = str + "0";
-                }
-            }
-            for (var i = 0; i < 16; i++)
-            {
-                if (str[i] == '1')
-                {
-                    number += (int)Math.Pow(2 , 16 - i - 1);
-                }
-            }
-            return number;
-        }
-
 
         /// <summary>
         /// byte转化为二进制字符串
@@ -137,29 +102,61 @@ namespace GZIPmodel
         /// <param name="writeFilePath">要存储的文件全路径</param>
         public static void GZIP(string readFilePath, string writeFilePath)
         {
-            
-            using (var streamReader = new StreamReader(readFilePath , GetFileEncodeType(readFilePath) , false))
+            //用于存储压缩信息和存储压缩码的数据结构
+            var codingpar = new Dictionary<char, uint>();
+            var bytes = new List<byte>();
+
+            string str;
+            //读取文件
+            using (var sr = new StreamReader(readFilePath, GetFileEncodeType(readFilePath), false))
             {
-                var str = streamReader.ReadToEnd();
-                Regex.Replace(str, "[\r\n]", "\n");
-                var huff = new GZIPhuffman(str);
-                var b = huff.GZIPcoding(str);
-                var bytes = new List<byte>();
-                for (var i = 0; i < b.Length / 8; i++)
-                {
-                    var tmp = StringToUint(b.Substring(i * 8, 8));
-                    try
-                    {
-                        bytes.Add(tmp);
-                    }
-                    catch (Exception)
-                    {
-                        throw new Exception();
-                    }
-                }
-                File.WriteAllBytes(writeFilePath, bytes.ToArray());   
-                Console.WriteLine("压缩完毕");
+                str = sr.ReadToEnd();
+                sr.Close();
+                Console.WriteLine("读入文件成功......");
             }
+            
+            //将文中的windows换行标准格式\r\n 替换为 \n
+            str = Regex.Replace(str, "\r\n", "\n");
+
+            //使用文本文件读取的字符串构造huffman
+            Console.WriteLine("开始压缩......");
+            var huff = new GZIPhuffman(str);
+            var b = huff.GZIPcoding(str, ref codingpar);    //获得解压码  这里有大量的时间消耗
+
+            //将每八个字节的01字符串编码转化成一个字节
+            for (var i = 0; i < b.Length / 8 ; i++)
+            {
+                var tmp = StringToUint(b.Substring(i*8, 8));
+                try
+                {
+                    bytes.Add(tmp);
+                }
+                catch (Exception)
+                {
+                    throw new Exception();
+                }
+            }
+            bytes.Add(StringToUint(b.Substring(b.Length - b.Length % 8)));
+            Console.WriteLine("压缩完毕......");
+            Console.WriteLine("正在保存......");
+            
+            //制作解压参数
+            var codingParStr = new StringBuilder();
+            foreach (var v in codingpar)
+                codingParStr.Append(v.Key + ":" + v.Value + "|");
+            codingParStr.Append("\r\n");
+
+            //存入文件
+            var fs = new FileStream(writeFilePath, FileMode.Create);
+            var bs = new BufferedStream(fs);
+            var bw = new BinaryWriter(bs , Encoding.Default);
+            bw.Write(codingParStr.ToString());
+            bw.Write(bytes.ToArray());
+            bw.Flush();
+            bw.Close();
+            bs.Close();
+            fs.Close();
+            Console.WriteLine("任务已经完成!");
         }
                 
         /// <summary>
@@ -169,41 +166,59 @@ namespace GZIPmodel
         /// <param name="writeFilePath">要存储的文件全路径</param>
         public static void UNGZIP(string readFilePath, string writeFilePath)
         {
-            var bytes = File.ReadAllBytes(readFilePath);
-            const string Gzipflag = "000000000010100000000000011001110000000001111010000000000110100100000000011100000000000000101001";       //压缩标志
-            var code = bytes.Aggregate("", (current, t) => current + DtoB(t));
-            var strs = Regex.Split(code, Gzipflag);
-            //Console.WriteLine(code.Length + " = " + strs[0].Length + "\r\n\r\n\r\n" + strs[1].Length);
-            var oldStrPar = strs[0];
-            var Par = "";
-            for (var i = 0; i < oldStrPar.Length / 16; i++)
-            {
-                var tmp = StringToChar(oldStrPar.Substring(i * 16, 16));
-                try
-                {
-                    Par += (char)tmp;
-                }
-                catch (Exception)
-                {
-                    throw new Exception();
-                }
-            }
+            
+            var encoding = GetFileEncodeType(readFilePath);
+            var fs = new FileStream(readFilePath, FileMode.Open);
+            var bs = new BufferedStream(fs);
+            var br = new BinaryReader(bs , encoding);
 
-            Dictionary<char , uint> mDictionary = new Dictionary<char, uint>();
-            var match = Regex.Match(Par, "(.{0,1}|\\n):(\\d+)\\|");          //通过正则匹配huffman树的key和value
+            //获取编码参数部分
+            var sbPar = new StringBuilder();
+            var ch = br.ReadChar();
+            while (ch != '\r' || br.ReadChar() != '\n')
+            {
+                sbPar.Append(ch);
+                ch = br.ReadChar();
+            }
+            Console.WriteLine("已获取编码参数......");
+            //获取正式编码部分
+            var sbCod = new StringBuilder();
+            while (br.BaseStream.Position != br.BaseStream.Length)
+            {
+                sbCod.Append(DtoB(br.ReadByte()));
+            }
+            Console.WriteLine("已获取编码......");
+            //关闭流
+            br.Close();
+            bs.Close();
+            fs.Close();
+
+            //制作编码参数数据权值字典
+            var valueWeight = new Dictionary<char, uint>();
+            var match = Regex.Match(sbPar.ToString() , "(.{0,1}|\\n|\\r):(\\d+)\\|");
             while (match.Success)
-            { 
-                
-                var Key = match.Groups[1].Value[0];
-                var Value = uint.Parse(match.Groups[2].Value);
-                mDictionary.Add(Key , Value);                           //构造字典
+            {
+                valueWeight.Add(match.Groups[1].Value[0] , uint.Parse(match.Groups[2].Value));
                 match = match.NextMatch();
             }
-            var gzi = new GZIPhuffman(mDictionary);
-            var text = gzi.GZIPtranslate(strs[1]);
-            Regex.Replace(text, "[\n]", "\r\n");
-            File.WriteAllText(writeFilePath, text);
-            Console.WriteLine("解压完毕");
+
+            //权值字典建立huffman
+            Console.WriteLine("开始还原压缩树......");
+            var huff = new GZIPhuffman(valueWeight);
+            Console.WriteLine("开始解压......");
+            var result = huff.GZIPtranslate(sbCod.ToString());
+            
+
+            //写入应用
+            Console.WriteLine("正在写入文件......");
+            var ifs = new FileStream(writeFilePath , FileMode.Create , FileAccess.Write);
+            var ibs = new BufferedStream(ifs);
+            var isw = new StreamWriter(ibs);
+            isw.Write(result);
+            isw.Close();
+            ibs.Close();
+            ifs.Close();
+            Console.WriteLine("任务已完成");
         }
     }
 }

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.CodeDom;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 
 namespace GZIPmodel
@@ -59,6 +61,11 @@ namespace GZIPmodel
         private readonly List<GZIPhuffmanNode> mHuffmaGziPhuffmanNodes = new List<GZIPhuffmanNode>();
 
         /// <summary>
+        /// 建立数据和字节码对照表
+        /// </summary>
+        private readonly Dictionary<char,string> mTransTable = new Dictionary<char, string>();
+
+        /// <summary>
         /// 数据字典 key:数据 value:权值
         /// </summary>
         private Dictionary<char, uint> mValueWeight;
@@ -103,6 +110,7 @@ namespace GZIPmodel
                 mHuffmaGziPhuffmanNodes.Add(new GZIPhuffmanNode(null , null , null) {Value = data.Key});
             }
             CreatHuffmanNode(isCreated , WeightList);                               //递归创建huffman树
+            SetTransTable();                                                        //设置对照字典
         }
 
         /// <summary>
@@ -159,7 +167,9 @@ namespace GZIPmodel
         /// <returns>编码值</returns>
         private string CharToCode(char cj)
         {
-            var result = "";
+            
+            var result = new StringBuilder();
+            
             var index = 0;
             for (var i = 0; i < (mHuffmaGziPhuffmanNodes.Count + 1) / 2; i++)
             {
@@ -173,74 +183,31 @@ namespace GZIPmodel
             {
                 if (curNode.mPNode.mLNode != null && curNode == curNode.mPNode.mLNode)
                 {
-                    result = '0' + result;
+                    result.Insert(0 , '0');
                 }
                 else
                 {
-                    result = '1' + result;
+                    result.Insert(0, '1');
                 }
                 curNode = curNode.mPNode;
             }
-            return result;
+            return result.ToString();
         }
 
         /// <summary>
-        /// 获得解码字符
+        /// 设置解压码和数据对照表
         /// </summary>
-        /// <param name="code">编码值</param>
-        /// <returns></returns>
-        private char? CodeToChar(ref string code)
+        private void SetTransTable()
         {
-            var curNode = mHuffmaGziPhuffmanNodes[mHuffmaGziPhuffmanNodes.Count - 1];
-            if (code.Length <= 0) return null;
-            for (var i = 0 ; i <= code.Length ; i++)
+            foreach (var v in mValueWeight)
             {
-                if (curNode == null) return null;                
-                
-                if (curNode.mLNode == null && curNode.mRNode == null)
-                {
-                    code = code.Substring(i);
-                    return curNode.Value;
-                }
-                if ( i < code.Length)
-                {
-                    curNode = code[i] == '0' ? curNode.mLNode : curNode.mRNode;
-                }
-                else
-                {
-                    code = code.Substring(i);
-                    return null;
-                }               
-                
+                mTransTable.Add(v.Key , CharToCode(v.Key));
             }
-            return null;
-        }
-
-        /// <summary>
-        /// 无符号整形转化为二进制字符串
-        /// </summary>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        private static string DtoB(uint b)
-        {
-            var str = "";
-            while (b / 2 != 0)
-            {
-                str = b % 2 + str;
-                b = b / 2;
-            }
-            str = b % 2 + str;
-            if (str.Length >= 16) return str;
-            for (var i = str.Length; i < 16; i++)
-            {
-                str = "0" + str;
-            }
-            return str;
         }
 
         //--------------------------------------------------------public方法定义---------------------------------------------------------------
         /// <summary>
-        /// 构造方法
+        /// 使用字符串构造huffman树
         /// </summary>
         public GZIPhuffman(string buf)
         {
@@ -257,24 +224,24 @@ namespace GZIPmodel
             mValueWeight = dictionary;
             CreatHuffman();
         }
+
         /// <summary>
         /// 字符串编码
         /// </summary>
         /// <param name="buf">要编码的字符串</param>
+        /// <param name="parm">编码参数的引用传递</param>
         /// <returns>编码</returns>
-        public string GZIPcoding(string buf)
+        public string GZIPcoding(string buf , ref Dictionary<char , uint> parm)
         {
-            //压缩标志   如 a:12|b:32(gzip)
-            var GZIPflag = "";
-            foreach (var item in mValueWeight)
+            if (parm == null) throw new ArgumentNullException(nameof(parm));
+            parm = mValueWeight;
+            var sb = new StringBuilder();
+            foreach (var s in buf)
             {
-                var vasb = item.Value.ToString().Aggregate("", (current, vas) => current + DtoB(vas));
-                GZIPflag += DtoB(item.Key) + DtoB(':') + vasb + DtoB('|');
+                sb.Append(mTransTable[s]);
             }
-            const string flag = "(gzip)";
-            GZIPflag = flag.Aggregate(GZIPflag, (current, i) => current + DtoB(i));
-            var result = GZIPflag;              //把压缩标志放入二进制数据前
-            return buf.Select(CharToCode).Aggregate(result, (current, s) => current + s);
+            return sb.ToString();
+
         }
 
         /// <summary>
@@ -284,12 +251,23 @@ namespace GZIPmodel
         /// <returns>字符串</returns>
         public string GZIPtranslate(string code)
         {
-            var result = "";
-            while (code.Length > 0)
+            var lc = new List<char>(code);
+            var result = new StringBuilder();
+            var Ky = new List<char>(mTransTable.Keys);
+            var Vy = new List<string>(mTransTable.Values);
+            var tmp = new StringBuilder("");
+            foreach (var t in lc)
             {
-                result += CodeToChar(ref code);
+                int index;
+                if ((index = Vy.IndexOf(tmp.ToString())) >= 0)
+                {
+                    result.Append(Ky[index]);
+                    tmp.Clear();
+                }
+                tmp.Append(t);
             }
-            return result;
+            
+            return result.ToString();
         }
     }
 }
