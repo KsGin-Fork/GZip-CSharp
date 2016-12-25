@@ -1,10 +1,5 @@
 ﻿using System;
-using System.CodeDom;
-using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.Remoting.Messaging;
 using System.Text;
 
 namespace GZIPmodel
@@ -252,19 +247,19 @@ namespace GZIPmodel
         /// </summary>
         /// <param name="code">编码值</param>
         /// <returns>字符串</returns>
-        public string GZIPtranslate(string code)
+        public string GZIPdecoding(string code)                //循环次数过多
         {
             var lc = new List<char>(code);
             var re = new StringBuilder();
             var Ky = new List<char>(mTransTable.Keys);
             var Vy = new List<string>(mTransTable.Values);
             var tmp = new StringBuilder();
-
-            lc.ForEach(e =>                                       
+            lc.ForEach(e =>
             {
                 int index;
                 if ((index = Vy.IndexOf(tmp.ToString())) >= 0)
                 {
+                    //Console.WriteLine("第{0}个字节解码完成",re.Length);
                     re.Append(Ky[index]);
                     tmp.Clear();
                 }

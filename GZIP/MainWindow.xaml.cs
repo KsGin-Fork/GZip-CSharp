@@ -28,7 +28,7 @@ namespace GZIP
         /// <param name="e"></param>
         private void ZIPpathFromSelectButton_OnClick(object sender, RoutedEventArgs e)
         {
-            var openFileLog = new OpenFileDialog {Filter = "文本文件(.txt)|*.txt"};
+            var openFileLog = new OpenFileDialog {Filter = "文本文件(.txt)|*.txt|源文件(.souce)|*.souce" };
             if (openFileLog.ShowDialog() == true)
             {
                 ZIPpathFrom.Text = openFileLog.FileName;
@@ -42,7 +42,7 @@ namespace GZIP
         /// <param name="e"></param>
         private void ZIPpathToSelectButton_OnClick(object sender, RoutedEventArgs e)
         {
-            var saveFileDialog = new SaveFileDialog { Filter = "压缩文件(.gzip)|*.gzip" };
+            var saveFileDialog = new SaveFileDialog { Filter = "压缩文件(.gzip)|*.gzip|压缩文件(.code)|*.code" };
             if (saveFileDialog.ShowDialog() == true)
             {
                 ZIPpathTo.Text = saveFileDialog.FileName;
@@ -56,7 +56,7 @@ namespace GZIP
         /// <param name="e"></param>
         private void UNZIPpathFromSelectButton_OnClick(object sender, RoutedEventArgs e)
         {
-            var openFileLog = new OpenFileDialog { Filter = "压缩文件(.gzip)|*.gzip" };
+            var openFileLog = new OpenFileDialog { Filter = "压缩文件(.gzip)|*.gzip|压缩文件(.code)|*.code" };
             if (openFileLog.ShowDialog() == true)
             {
                 UNZIPpathFrom.Text = openFileLog.FileName;
@@ -70,7 +70,7 @@ namespace GZIP
         /// <param name="e"></param>
         private void UNZIPpathToSelectButton_OnClick(object sender, RoutedEventArgs e)
         {
-            var saveFileDialog = new SaveFileDialog() { Filter = "文本文件(.txt)|*.txt" };
+            var saveFileDialog = new SaveFileDialog() { Filter = "文本文件(.txt)|*.txt|解压文件(.decode)|*.decode" };
             if (saveFileDialog.ShowDialog() == true)
             {
                UNZIPpathTo.Text = saveFileDialog.FileName;

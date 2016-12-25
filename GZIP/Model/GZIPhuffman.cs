@@ -58,7 +58,7 @@ namespace GZIPmodel
         /// <summary>
         /// Huffman树
         /// </summary>
-        private readonly List<GZIPhuffmanNode> mHuffmaGziPhuffmanNodes = new List<GZIPhuffmanNode>();
+        private readonly List<GZIPhuffmanNode> mGziPhuffmanNodes = new List<GZIPhuffmanNode>();
 
         /// <summary>
         /// 建立数据和字节码对照表
@@ -75,11 +75,11 @@ namespace GZIPmodel
         /// <summary>
         /// 分析字符串将其存为数据和频度对应的字典
         /// </summary>
-        /// <param name="buf"></param>
-        private void ParseCharArrays(string buf)
+        /// <param name="str"></param>
+        private void ParseString(string str)
         {
             mValueWeight = new Dictionary<char, uint>();
-            foreach (var data in buf)
+            foreach (var data in str)
             {
                 if (mValueWeight.ContainsKey(data))         //如果值已经在字典中出现 ， 则将其频度自增1
                 {
@@ -107,7 +107,7 @@ namespace GZIPmodel
             foreach (var data in mValueWeight)
             {
                 //初始化一个左右子树和双亲节点都为空的节点加入到huffmanNodes列表中
-                mHuffmaGziPhuffmanNodes.Add(new GZIPhuffmanNode(null , null , null) {Value = data.Key});
+                mGziPhuffmanNodes.Add(new GZIPhuffmanNode(null , null , null) {Value = data.Key});
             }
             CreatHuffmanNode(isCreated , WeightList);                               //递归创建huffman树
             SetTransTable();                                                        //设置对照字典
@@ -126,16 +126,16 @@ namespace GZIPmodel
                 var sMinIndex = IndexOfWeightMin(isCreated, WeightList);
                 if (sMinIndex == -1) return;
                 isCreated[sMinIndex] = true;
-                var newNode = new GZIPhuffmanNode(null, mHuffmaGziPhuffmanNodes[fMinIndex], mHuffmaGziPhuffmanNodes[sMinIndex]);
+                var newNode = new GZIPhuffmanNode(null, mGziPhuffmanNodes[fMinIndex], mGziPhuffmanNodes[sMinIndex]);
                 //isCreated里添加新项
                 isCreated.Add(false);
                 //weightlist里添加新项
                 WeightList.Add(WeightList[fMinIndex] + WeightList[sMinIndex]);
                 //设置fMin 和 sMin的双亲节点
-                mHuffmaGziPhuffmanNodes[fMinIndex].mPNode = newNode;
-                mHuffmaGziPhuffmanNodes[sMinIndex].mPNode = newNode;
+                mGziPhuffmanNodes[fMinIndex].mPNode = newNode;
+                mGziPhuffmanNodes[sMinIndex].mPNode = newNode;
                 //mHuffmaGziPhuffmanNodes里添加新项
-                mHuffmaGziPhuffmanNodes.Add(newNode);
+                mGziPhuffmanNodes.Add(newNode);
                 //递归处理
             }
         }
@@ -147,7 +147,7 @@ namespace GZIPmodel
         private int IndexOfWeightMin(IReadOnlyList<bool> isCreated , IReadOnlyList<uint> WeightList)
         {
             var indexOfMinValue = -1;
-            for (var i = 0; i < mHuffmaGziPhuffmanNodes.Count ; i++)
+            for (var i = 0; i < mGziPhuffmanNodes.Count ; i++)
             {
                 if (isCreated[i]) continue;
                 if (indexOfMinValue == -1)
@@ -173,14 +173,14 @@ namespace GZIPmodel
             var result = new StringBuilder();
             
             var index = 0;
-            for (var i = 0; i < (mHuffmaGziPhuffmanNodes.Count + 1) / 2; i++)
+            for (var i = 0; i < (mGziPhuffmanNodes.Count + 1) / 2; i++)
             {
-                if (cj == mHuffmaGziPhuffmanNodes[i].Value)
+                if (cj == mGziPhuffmanNodes[i].Value)
                 {
                     index = i;
                 }
             }
-            var curNode = mHuffmaGziPhuffmanNodes[index];
+            var curNode = mGziPhuffmanNodes[index];
             while (curNode.mPNode != null)
             {
                 if (curNode.mPNode.mLNode != null && curNode == curNode.mPNode.mLNode)
@@ -211,9 +211,9 @@ namespace GZIPmodel
         /// <summary>
         /// 使用字符串构造huffman树
         /// </summary>
-        public GZIPhuffman(string buf)
+        public GZIPhuffman(string str)
         {
-            ParseCharArrays(buf);          //通过传入参数初始化字典
+            ParseString(str);          //通过传入参数初始化字典
             CreatHuffman();                //通过字典初始化树
         }
 
@@ -252,7 +252,7 @@ namespace GZIPmodel
         /// </summary>
         /// <param name="code">编码值</param>
         /// <returns>字符串</returns>
-        public string GZIPtranslate(string code)
+        public string GZIPdecoding(string code)
         {
             var lc = new List<char>(code);
             var re = new StringBuilder();

@@ -143,7 +143,7 @@ namespace GZIPmodel
             Console.WriteLine("花费时间{0}毫秒", cur - start);
 
             Console.WriteLine("正在保存......");
-            
+
             //制作解压参数
             var codingParStr = new StringBuilder();
             foreach (var v in codingpar)
@@ -154,7 +154,7 @@ namespace GZIPmodel
             var fs = new FileStream(writeFilePath, FileMode.Create);
             var bs = new BufferedStream(fs);
             var bw = new BinaryWriter(bs , Encoding.Default);
-            bw.Write(codingParStr.ToString());
+            //bw.Write(codingParStr.ToString());
             bw.Write(bytes.ToArray());
             bw.Flush();
             bw.Close();
@@ -211,7 +211,7 @@ namespace GZIPmodel
 
             var start = Environment.TickCount;
             Console.Write("开始解压......");
-            var result = huff.GZIPtranslate(sbCod.ToString());
+            var result = huff.GZIPdecoding(sbCod.ToString());
             result = Regex.Replace(result, "\n", "\r\n");
 
             var cur = Environment.TickCount;

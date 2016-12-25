@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace GZIPmodel
 {
@@ -10,6 +9,7 @@ namespace GZIPmodel
             if (args.Length != 3)
             {
                 Console.WriteLine("不受认可的程序参数");
+                return;
             }
             switch (args[0])
             {

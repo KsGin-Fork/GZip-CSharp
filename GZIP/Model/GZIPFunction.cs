@@ -196,7 +196,7 @@ namespace GZIPmodel
             //权值字典建立huffman
             var huff = new GZIPhuffman(valueWeight);
 
-            var result = huff.GZIPtranslate(sbCod.ToString());
+            var result = huff.GZIPdecoding(sbCod.ToString());
             result = Regex.Replace(result, "\n", "\r\n");
 
             
