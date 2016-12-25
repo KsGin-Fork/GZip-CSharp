@@ -109,12 +109,12 @@ namespace GZIPmodel
                 //初始化一个左右子树和双亲节点都为空的节点加入到huffmanNodes列表中
                 mGziPhuffmanNodes.Add(new GZIPhuffmanNode(null , null , null) {Value = data.Key});
             }
-            CreatHuffmanNode(isCreated , WeightList);                               //递归创建huffman树
+            CreatHuffmanNode(isCreated , WeightList);                               //创建huffman树
             SetTransTable();                                                        //设置对照字典
         }
 
         /// <summary>
-        /// 递归创建huffman树节点
+        /// 创建huffman树节点
         /// </summary>
         private void CreatHuffmanNode(List<bool> isCreated, List<uint> WeightList)
         {
