@@ -7,34 +7,36 @@ namespace GZIPmodel
     {
         private static void Main(string[] args)
         {
-            if (args[0] == "gzip")
+            if (args.Length != 3)
             {
-                try
-                {
-                    GZIPFunction.GZIP(args[1], args[2]);
-                }
-                catch (Exception)
-                {
-                    Console.WriteLine("输入参数有误");
-                }
+                Console.WriteLine("不受认可的程序参数");
             }
-            else if (args[0] == "ungzip")
+            switch (args[0])
             {
-                try
-                {
-                    GZIPFunction.UNGZIP(args[1], args[2]);
-                }
-                catch (Exception)
-                {
-                    Console.WriteLine("输入参数有误");
-                }
+                case "gzip":
+                    try
+                    {
+                        GZIPFunction.GZIP(args[1], args[2]);
+                    }
+                    catch (Exception)
+                    {
+                        Console.WriteLine("输入参数有误");
+                    }
+                    break;
+                case "ungzip":
+                    try
+                    {
+                        GZIPFunction.UNGZIP(args[1], args[2]);
+                    }
+                    catch (Exception)
+                    {
+                        Console.WriteLine("输入参数有误");
+                    }
+                    break;
+                default:
+                    Console.WriteLine("找不到此命令");
+                    break;
             }
-            else
-            {
-                Console.WriteLine("找不到此命令");
-            }
-            
-            Console.Read();
         }
     }
 }
