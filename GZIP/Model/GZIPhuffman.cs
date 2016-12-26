@@ -5,7 +5,6 @@ using System.Text;
 namespace GZIPmodel
 {
     using System.Threading;
-    using System.Xml.XPath;
 
     /// <summary>
     /// GZIP核心类,使用huffman编码
