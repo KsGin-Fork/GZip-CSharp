@@ -203,7 +203,7 @@ namespace GZIPmodel
                 valueWeight.Add(match.Groups[1].Value[0] , uint.Parse(match.Groups[2].Value));
                 match = match.NextMatch();
             }
-            Console.WriteLine(sbPar);
+
             //权值字典建立huffman
             Console.WriteLine("开始还原压缩树......");
             var huff = new GZIPhuffman(valueWeight);

@@ -4,6 +4,9 @@ using System.Text;
 
 namespace GZIPmodel
 {
+    using System.Threading;
+    using System.Xml.XPath;
+
     /// <summary>
     /// GZIP核心类,使用huffman编码
     /// </summary>
@@ -11,6 +14,9 @@ namespace GZIPmodel
     {
 
     //--------------------------------------------------------数据类型定义------------------------------------------------------------
+
+        private const uint assertLength = 500000; 
+
         /// <summary>
         /// 节点类定义
         /// </summary>
@@ -53,7 +59,7 @@ namespace GZIPmodel
         /// <summary>
         /// Huffman树
         /// </summary>
-        private readonly List<GZIPhuffmanNode> mGziPhuffmanNodes = new List<GZIPhuffmanNode>();
+        private readonly List<GZIPhuffmanNode> mHuffmaGziPhuffmanNodes = new List<GZIPhuffmanNode>();
 
         /// <summary>
         /// 建立数据和字节码对照表
@@ -70,11 +76,11 @@ namespace GZIPmodel
         /// <summary>
         /// 分析字符串将其存为数据和频度对应的字典
         /// </summary>
-        /// <param name="str"></param>
-        private void ParseString(string str)
+        /// <param name="buf"></param>
+        private void ParseCharArrays(string buf)
         {
             mValueWeight = new Dictionary<char, uint>();
-            foreach (var data in str)
+            foreach (var data in buf)
             {
                 if (mValueWeight.ContainsKey(data))         //如果值已经在字典中出现 ， 则将其频度自增1
                 {
@@ -102,10 +108,11 @@ namespace GZIPmodel
             foreach (var data in mValueWeight)
             {
                 //初始化一个左右子树和双亲节点都为空的节点加入到huffmanNodes列表中
-                mGziPhuffmanNodes.Add(new GZIPhuffmanNode(null , null , null) {Value = data.Key});
+                mHuffmaGziPhuffmanNodes.Add(new GZIPhuffmanNode(null , null , null) {Value = data.Key});
             }
             CreatHuffmanNode(isCreated , WeightList);                               //创建huffman树
             SetTransTable();                                                        //设置对照字典
+            
         }
 
         /// <summary>
@@ -121,16 +128,16 @@ namespace GZIPmodel
                 var sMinIndex = IndexOfWeightMin(isCreated, WeightList);
                 if (sMinIndex == -1) return;
                 isCreated[sMinIndex] = true;
-                var newNode = new GZIPhuffmanNode(null, mGziPhuffmanNodes[fMinIndex], mGziPhuffmanNodes[sMinIndex]);
+                var newNode = new GZIPhuffmanNode(null, mHuffmaGziPhuffmanNodes[fMinIndex], mHuffmaGziPhuffmanNodes[sMinIndex]);
                 //isCreated里添加新项
                 isCreated.Add(false);
                 //weightlist里添加新项
                 WeightList.Add(WeightList[fMinIndex] + WeightList[sMinIndex]);
                 //设置fMin 和 sMin的双亲节点
-                mGziPhuffmanNodes[fMinIndex].mPNode = newNode;
-                mGziPhuffmanNodes[sMinIndex].mPNode = newNode;
+                mHuffmaGziPhuffmanNodes[fMinIndex].mPNode = newNode;
+                mHuffmaGziPhuffmanNodes[sMinIndex].mPNode = newNode;
                 //mHuffmaGziPhuffmanNodes里添加新项
-                mGziPhuffmanNodes.Add(newNode);
+                mHuffmaGziPhuffmanNodes.Add(newNode);
                 //递归处理
             }
         }
@@ -142,7 +149,7 @@ namespace GZIPmodel
         private int IndexOfWeightMin(IReadOnlyList<bool> isCreated , IReadOnlyList<uint> WeightList)
         {
             var indexOfMinValue = -1;
-            for (var i = 0; i < mGziPhuffmanNodes.Count ; i++)
+            for (var i = 0; i < mHuffmaGziPhuffmanNodes.Count ; i++)
             {
                 if (isCreated[i]) continue;
                 if (indexOfMinValue == -1)
@@ -168,14 +175,14 @@ namespace GZIPmodel
             var result = new StringBuilder();
             
             var index = 0;
-            for (var i = 0; i < (mGziPhuffmanNodes.Count + 1) / 2; i++)
+            for (var i = 0; i < (mHuffmaGziPhuffmanNodes.Count + 1) / 2; i++)
             {
-                if (cj == mGziPhuffmanNodes[i].Value)
+                if (cj == mHuffmaGziPhuffmanNodes[i].Value)
                 {
                     index = i;
                 }
             }
-            var curNode = mGziPhuffmanNodes[index];
+            var curNode = mHuffmaGziPhuffmanNodes[index];
             while (curNode.mPNode != null)
             {
                 if (curNode.mPNode.mLNode != null && curNode == curNode.mPNode.mLNode)
@@ -202,13 +209,35 @@ namespace GZIPmodel
             }
         }
 
+        private string decoding(string code)
+        {
+            var lc = new List<char>(code);
+            var re = new StringBuilder();
+            var Ky = new List<char>(mTransTable.Keys);
+            var Vy = new List<string>(mTransTable.Values);
+            var tmp = new StringBuilder();
+
+            lc.ForEach(e =>
+            {
+                int index;
+                if ((index = Vy.IndexOf(tmp.ToString())) >= 0)
+                {
+                    re.Append(Ky[index]);
+                    tmp.Clear();
+                }
+                tmp.Append(e);
+            });
+
+            return re.ToString();
+        }
+
         //--------------------------------------------------------public方法定义---------------------------------------------------------------
         /// <summary>
         /// 使用字符串构造huffman树
         /// </summary>
-        public GZIPhuffman(string str)
+        public GZIPhuffman(string buf)
         {
-            ParseString(str);          //通过传入参数初始化字典
+            ParseCharArrays(buf);          //通过传入参数初始化字典
             CreatHuffman();                //通过字典初始化树
         }
 
@@ -233,12 +262,24 @@ namespace GZIPmodel
             var lb = new List<char>(buf);
             if (parm == null) throw new ArgumentNullException(nameof(parm));
             parm = mValueWeight;
-            var sb = new StringBuilder();          
+            var sb = new StringBuilder();
+            var resb = new StringBuilder();          
             lb.ForEach(e =>
             {
-                sb.Append(mTransTable[e]);
+                var cod = mTransTable[e];
+                if (sb.Length + cod.Length > assertLength)               //每隔assertLength位设置一个中断点
+                {
+                    for (var i = sb.Length-1 ; i < assertLength ; i++)
+                    {
+                        sb.Append("0");
+                    }
+                    resb.Append(sb);
+                    sb.Clear();
+                }
+                sb.Append(cod);
             });
-            return sb.ToString();
+            resb.Append(sb);
+            return resb.ToString();
 
         }
 
@@ -247,26 +288,54 @@ namespace GZIPmodel
         /// </summary>
         /// <param name="code">编码值</param>
         /// <returns>字符串</returns>
-        public string GZIPdecoding(string code)
+        public string GZIPdecoding(string code)                //循环次数过多 采用了多线程
         {
-            var lc = new List<char>(code);
-            var re = new StringBuilder();
-            var Ky = new List<char>(mTransTable.Keys);
-            var Vy = new List<string>(mTransTable.Values);
-            var tmp = new StringBuilder();
+            var result = new StringBuilder();
+            var reList = new string[code.Length / assertLength + 1];
+            var manualEvents = new List<ManualResetEvent>();                  //处理线程同步
 
-            lc.ForEach(e =>                                       
+            for (var i = 0; i < code.Length / assertLength; i++)
             {
-                int index;
-                if ((index = Vy.IndexOf(tmp.ToString())) >= 0)
+                var mre = new ManualResetEvent(false);
+                manualEvents.Add(mre);
+
+                var i2 = i;
+                ThreadPool.QueueUserWorkItem(state =>
                 {
-                    re.Append(Ky[index]);
-                    tmp.Clear();
-                }
-                tmp.Append(e); 
-            });
-                                    
-            return re.ToString();
+                    Console.WriteLine("{0}段已经处理开始,待处理个数{1}" , i2 , (int)assertLength);
+                    reList[i2] = decoding(code.Substring((int)(i2 * assertLength) , (int) assertLength));
+                    Console.WriteLine("{0}段已经处理完成", i2);
+                    mre.Set();        //设置线程结束状态
+
+                } , mre);
+            }
+            if (code.Length%assertLength == 0) return result.ToString();
+            
+
+            var i1 = (int)(code.Length / assertLength);
+
+            var mmre = new ManualResetEvent(false);
+            manualEvents.Add(mmre);
+            ThreadPool.QueueUserWorkItem(state =>
+            {
+                Console.WriteLine("{0}段已经处理开始,待处理个数{1}",i1, code.Length % assertLength);
+                reList[i1] = decoding(code.Substring((int) (i1*assertLength)));
+                Console.WriteLine("{0}段已经处理完成", i1);
+                mmre.Set();
+            } , mmre);
+
+
+
+            // ReSharper disable once CoVariantArrayConversion
+            WaitHandle.WaitAll(manualEvents.ToArray());
+
+            Console.WriteLine("开始数据合并");
+            foreach (var r in reList)
+            {
+                result.Append(r);
+            }
+            Console.WriteLine("数据合并完成");
+            return result.ToString();
         }
     }
 }

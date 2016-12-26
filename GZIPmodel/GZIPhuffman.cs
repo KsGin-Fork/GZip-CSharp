@@ -5,6 +5,7 @@ using System.Text;
 namespace GZIPmodel
 {
     using System.Threading;
+    using System.Xml.XPath;
 
     /// <summary>
     /// GZIP核心类,使用huffman编码
@@ -14,7 +15,7 @@ namespace GZIPmodel
 
     //--------------------------------------------------------数据类型定义------------------------------------------------------------
 
-        private const uint assertLength = 1000000; 
+        private const uint assertLength = 500000; 
 
         /// <summary>
         /// 节点类定义
@@ -208,6 +209,28 @@ namespace GZIPmodel
             }
         }
 
+        private string decoding(string code)
+        {
+            var lc = new List<char>(code);
+            var re = new StringBuilder();
+            var Ky = new List<char>(mTransTable.Keys);
+            var Vy = new List<string>(mTransTable.Values);
+            var tmp = new StringBuilder();
+
+            lc.ForEach(e =>
+            {
+                int index;
+                if ((index = Vy.IndexOf(tmp.ToString())) >= 0)
+                {
+                    re.Append(Ky[index]);
+                    tmp.Clear();
+                }
+                tmp.Append(e);
+            });
+
+            return re.ToString();
+        }
+
         //--------------------------------------------------------public方法定义---------------------------------------------------------------
         /// <summary>
         /// 使用字符串构造huffman树
@@ -265,63 +288,51 @@ namespace GZIPmodel
         /// </summary>
         /// <param name="code">编码值</param>
         /// <returns>字符串</returns>
-        public string GZIPdecoding(string code)                //循环次数过多
+        public string GZIPdecoding(string code)                //循环次数过多 采用了多线程
         {
             var result = new StringBuilder();
-            var reList = new List<string>((int) (code.Length % assertLength == 0 ? code.Length / assertLength : code.Length / assertLength + 1));
-            var Ky = new List<char>(mTransTable.Keys);
-            var Vy = new List<string>(mTransTable.Values);
+            var reList = new string[code.Length / assertLength + 1];
+            var manualEvents = new List<ManualResetEvent>();                  //处理线程同步
+
             for (var i = 0; i < code.Length / assertLength; i++)
             {
-                var tmp = new StringBuilder();
-                var ti = i;
+                var mre = new ManualResetEvent(false);
+                manualEvents.Add(mre);
+
+                var i2 = i;
                 ThreadPool.QueueUserWorkItem(state =>
-                {  
-                    var lc = new List<char>(code.Substring((int) (ti* assertLength), (int)assertLength));
-                    Console.WriteLine("{0}段已经处理开始,待处理个数{1}", ti, lc.Count);
-                    var re = new StringBuilder();
-                    lc.ForEach(e =>
-                    {
-                        int index ;
-                        if ((index = Vy.IndexOf(tmp.ToString())) >= 0)
-                        {
-                            Console.WriteLine("{0}段已经还原个数{1}", ti, index);
-                            re.Append(Ky[index]);
-                            tmp.Clear();
-                        }
-                        tmp.Append(e);
-                    });
-                    
-                    reList.Insert(ti,tmp.ToString());
-                    Console.WriteLine("{0}段已经处理完成",ti);
-                });
+                {
+                    Console.WriteLine("{0}段已经处理开始,待处理个数{1}" , i2 , (int)assertLength);
+                    reList[i2] = decoding(code.Substring((int)(i2 * assertLength) , (int) assertLength));
+                    Console.WriteLine("{0}段已经处理完成", i2);
+                    mre.Set();        //设置线程结束状态
+
+                } , mre);
             }
             if (code.Length%assertLength == 0) return result.ToString();
             
-            var ttmp = new StringBuilder();
+
             var i1 = (int)(code.Length / assertLength);
+
+            var mmre = new ManualResetEvent(false);
+            manualEvents.Add(mmre);
             ThreadPool.QueueUserWorkItem(state =>
             {
-                var lc = new List<char>(code.Substring(i1));
-                var re = new StringBuilder();
-                lc.ForEach(e =>
-                {
-                    int index;
-                    if ((index = Vy.IndexOf(ttmp.ToString())) >= 0)
-                    {
-                        re.Append(Ky[index]);
-                        ttmp.Clear();
-                    }
-                    ttmp.Append(e);
-                });
-                reList[i1] = ttmp.ToString();
-            });
-                
-            Thread.CurrentThread.Join();
+                Console.WriteLine("{0}段已经处理开始,待处理个数{1}",i1, code.Length % assertLength);
+                reList[i1] = decoding(code.Substring((int) (i1*assertLength)));
+                Console.WriteLine("{0}段已经处理完成", i1);
+                mmre.Set();
+            } , mmre);
+
+            // ReSharper disable once CoVariantArrayConversion
+            WaitHandle.WaitAll(manualEvents.ToArray());
+
+            Console.WriteLine("开始数据合并");
             foreach (var r in reList)
             {
                 result.Append(r);
             }
+            Console.WriteLine("数据合并完成");
             return result.ToString();
         }
     }
