@@ -2,13 +2,13 @@
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:GZIP"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       mc:Ignorable="d" 
       d:DesignHeight="200" d:DesignWidth="300"
       Title="MessagePage">
-
-    <Grid>
-        <Label VerticalAlignment="Center" HorizontalAlignment="Center" Name="Message"></Label>
-    </Grid>
+    <Viewbox Stretch="Fill">
+        <Grid>
+            <Label Background="Bisque" Foreground="Crimson" VerticalAlignment="Center" FontSize="2" HorizontalAlignment="Center" Name="Message"></Label>
+        </Grid>
+    </Viewbox>
 </Page>

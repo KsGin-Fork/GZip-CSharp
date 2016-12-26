@@ -35,7 +35,7 @@
                     </StackPanel>
                 </Grid>
             </Border>
-            <Border Grid.Row="1" BorderThickness="3" BorderBrush="Chartreuse"  Background="Coral" Margin="1">
+            <Border Grid.Row="1" BorderThickness="3" BorderBrush="Chartreuse" CornerRadius="5" Background="Coral" Margin="1">
                 <Grid Name="UNGZIP">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>

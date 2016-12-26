@@ -149,12 +149,11 @@ namespace GZIPmodel
             foreach (var v in codingpar)
                 codingParStr.Append(v.Key + ":" + v.Value + "|");
             codingParStr.Append("\r\n");
-
             //存入文件
             var fs = new FileStream(writeFilePath, FileMode.Create);
             var bs = new BufferedStream(fs);
             var bw = new BinaryWriter(bs , Encoding.Default);
-            //bw.Write(codingParStr.ToString());
+            bw.Write(codingParStr.ToString());
             bw.Write(bytes.ToArray());
             bw.Flush();
             bw.Close();
@@ -204,7 +203,7 @@ namespace GZIPmodel
                 valueWeight.Add(match.Groups[1].Value[0] , uint.Parse(match.Groups[2].Value));
                 match = match.NextMatch();
             }
-
+            Console.WriteLine(sbPar);
             //权值字典建立huffman
             Console.WriteLine("开始还原压缩树......");
             var huff = new GZIPhuffman(valueWeight);

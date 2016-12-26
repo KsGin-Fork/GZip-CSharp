@@ -4,6 +4,8 @@ using System.Text;
 
 namespace GZIPmodel
 {
+    using System.Threading;
+
     /// <summary>
     /// GZIP核心类,使用huffman编码
     /// </summary>
@@ -11,6 +13,9 @@ namespace GZIPmodel
     {
 
     //--------------------------------------------------------数据类型定义------------------------------------------------------------
+
+        private const uint assertLength = 1000000; 
+
         /// <summary>
         /// 节点类定义
         /// </summary>
@@ -106,6 +111,7 @@ namespace GZIPmodel
             }
             CreatHuffmanNode(isCreated , WeightList);                               //创建huffman树
             SetTransTable();                                                        //设置对照字典
+            
         }
 
         /// <summary>
@@ -233,12 +239,24 @@ namespace GZIPmodel
             var lb = new List<char>(buf);
             if (parm == null) throw new ArgumentNullException(nameof(parm));
             parm = mValueWeight;
-            var sb = new StringBuilder();          
+            var sb = new StringBuilder();
+            var resb = new StringBuilder();          
             lb.ForEach(e =>
             {
-                sb.Append(mTransTable[e]);
+                var cod = mTransTable[e];
+                if (sb.Length + cod.Length > assertLength)               //每隔assertLength位设置一个中断点
+                {
+                    for (var i = sb.Length-1 ; i < assertLength ; i++)
+                    {
+                        sb.Append("0");
+                    }
+                    resb.Append(sb);
+                    sb.Clear();
+                }
+                sb.Append(cod);
             });
-            return sb.ToString();
+            resb.Append(sb);
+            return resb.ToString();
 
         }
 
@@ -249,24 +267,62 @@ namespace GZIPmodel
         /// <returns>字符串</returns>
         public string GZIPdecoding(string code)                //循环次数过多
         {
-            var lc = new List<char>(code);
-            var re = new StringBuilder();
+            var result = new StringBuilder();
+            var reList = new List<string>((int) (code.Length % assertLength == 0 ? code.Length / assertLength : code.Length / assertLength + 1));
             var Ky = new List<char>(mTransTable.Keys);
             var Vy = new List<string>(mTransTable.Values);
-            var tmp = new StringBuilder();
-            lc.ForEach(e =>
+            for (var i = 0; i < code.Length / assertLength; i++)
             {
-                int index;
-                if ((index = Vy.IndexOf(tmp.ToString())) >= 0)
+                var tmp = new StringBuilder();
+                var ti = i;
+                ThreadPool.QueueUserWorkItem(state =>
+                {  
+                    var lc = new List<char>(code.Substring((int) (ti* assertLength), (int)assertLength));
+                    Console.WriteLine("{0}段已经处理开始,待处理个数{1}", ti, lc.Count);
+                    var re = new StringBuilder();
+                    lc.ForEach(e =>
+                    {
+                        int index ;
+                        if ((index = Vy.IndexOf(tmp.ToString())) >= 0)
+                        {
+                            Console.WriteLine("{0}段已经还原个数{1}", ti, index);
+                            re.Append(Ky[index]);
+                            tmp.Clear();
+                        }
+                        tmp.Append(e);
+                    });
+                    
+                    reList.Insert(ti,tmp.ToString());
+                    Console.WriteLine("{0}段已经处理完成",ti);
+                });
+            }
+            if (code.Length%assertLength == 0) return result.ToString();
+            
+            var ttmp = new StringBuilder();
+            var i1 = (int)(code.Length / assertLength);
+            ThreadPool.QueueUserWorkItem(state =>
+            {
+                var lc = new List<char>(code.Substring(i1));
+                var re = new StringBuilder();
+                lc.ForEach(e =>
                 {
-                    //Console.WriteLine("第{0}个字节解码完成",re.Length);
-                    re.Append(Ky[index]);
-                    tmp.Clear();
-                }
-                tmp.Append(e); 
+                    int index;
+                    if ((index = Vy.IndexOf(ttmp.ToString())) >= 0)
+                    {
+                        re.Append(Ky[index]);
+                        ttmp.Clear();
+                    }
+                    ttmp.Append(e);
+                });
+                reList[i1] = ttmp.ToString();
             });
-                                    
-            return re.ToString();
+                
+            Thread.CurrentThread.Join();
+            foreach (var r in reList)
+            {
+                result.Append(r);
+            }
+            return result.ToString();
         }
     }
 }

@@ -13,7 +13,7 @@ namespace GZIP
     {
         private string readFilePath; //输入文件路径
         private string writeFilePath; //输出文件路径
-        private PromPtWindow promPtWindow; 
+        private PromPtWindow promPtWindow;
 
         public MainWindow()
         {
@@ -28,7 +28,7 @@ namespace GZIP
         /// <param name="e"></param>
         private void ZIPpathFromSelectButton_OnClick(object sender, RoutedEventArgs e)
         {
-            var openFileLog = new OpenFileDialog {Filter = "文本文件(.txt)|*.txt|源文件(.souce)|*.souce" };
+            var openFileLog = new OpenFileDialog {Filter = "文本文件(.txt)|*.txt|源文件(.souce)|*.souce"};
             if (openFileLog.ShowDialog() == true)
             {
                 ZIPpathFrom.Text = openFileLog.FileName;
@@ -42,7 +42,7 @@ namespace GZIP
         /// <param name="e"></param>
         private void ZIPpathToSelectButton_OnClick(object sender, RoutedEventArgs e)
         {
-            var saveFileDialog = new SaveFileDialog { Filter = "压缩文件(.gzip)|*.gzip|压缩文件(.code)|*.code" };
+            var saveFileDialog = new SaveFileDialog {Filter = "压缩文件(.gzip)|*.gzip|压缩文件(.code)|*.code"};
             if (saveFileDialog.ShowDialog() == true)
             {
                 ZIPpathTo.Text = saveFileDialog.FileName;
@@ -56,7 +56,7 @@ namespace GZIP
         /// <param name="e"></param>
         private void UNZIPpathFromSelectButton_OnClick(object sender, RoutedEventArgs e)
         {
-            var openFileLog = new OpenFileDialog { Filter = "压缩文件(.gzip)|*.gzip|压缩文件(.code)|*.code" };
+            var openFileLog = new OpenFileDialog {Filter = "压缩文件(.gzip)|*.gzip|压缩文件(.code)|*.code"};
             if (openFileLog.ShowDialog() == true)
             {
                 UNZIPpathFrom.Text = openFileLog.FileName;
@@ -70,10 +70,10 @@ namespace GZIP
         /// <param name="e"></param>
         private void UNZIPpathToSelectButton_OnClick(object sender, RoutedEventArgs e)
         {
-            var saveFileDialog = new SaveFileDialog() { Filter = "文本文件(.txt)|*.txt|解压文件(.decode)|*.decode" };
+            var saveFileDialog = new SaveFileDialog() {Filter = "文本文件(.txt)|*.txt|解压文件(.decode)|*.decode"};
             if (saveFileDialog.ShowDialog() == true)
             {
-               UNZIPpathTo.Text = saveFileDialog.FileName;
+                UNZIPpathTo.Text = saveFileDialog.FileName;
             }
         }
 
@@ -86,25 +86,28 @@ namespace GZIP
         {
             readFilePath = ZIPpathFrom.Text;
             writeFilePath = ZIPpathTo.Text;
-            try
+            new Thread(() =>
             {
-                new Thread(() =>
+                try
                 {
-                    GZIPFunction.GZIP(readFilePath, writeFilePath); 
+                    GZIPFunction.GZIP(readFilePath, writeFilePath);
+                }
+                catch (Exception)
+                {
                     Dispatcher.Invoke(() =>
                     {
-                        promPtWindow.Content = new MessagePage("压缩完毕");
+                        promPtWindow.Content = new MessagePage("文件地址不能为空");
                     });
-                }).Start();
-                promPtWindow = new PromPtWindow {Content = new Waitting("正在压缩")};
-                promPtWindow.ShowDialog();
+                    return;
+                }
 
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-                return;
-            }
+                Dispatcher.Invoke(() =>
+                {
+                    promPtWindow.Content = new MessagePage("压缩完毕");
+                });
+            }).Start();
+            promPtWindow = new PromPtWindow {Content = new Waitting("正在压缩")};
+            promPtWindow.ShowDialog();
         }
 
         /// <summary>
@@ -116,24 +119,28 @@ namespace GZIP
         {
             readFilePath = UNZIPpathFrom.Text;
             writeFilePath = UNZIPpathTo.Text;
-            try
+            new Thread(() =>
             {
-                new Thread(() =>
+                try
                 {
                     GZIPFunction.UNGZIP(readFilePath, writeFilePath);
+                }
+                catch (Exception)
+                {
                     Dispatcher.Invoke(() =>
                     {
-                        promPtWindow.Content = new MessagePage("解压完毕");
+                        promPtWindow.Content = new MessagePage("文件地址不能为空");
                     });
-                }).Start();
-                promPtWindow = new PromPtWindow { Content = new Waitting("正在解压") };
-                promPtWindow.ShowDialog();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-                return;
-            }
+                    return;
+                }
+                Dispatcher.Invoke(() =>
+                {
+                    promPtWindow.Content = new MessagePage("解压完毕");
+                });
+            }).Start();
+            promPtWindow = new PromPtWindow { Content = new Waitting("正在解压") };
+            promPtWindow.ShowDialog();
+
         }
     }
 }
