@@ -323,8 +323,6 @@ namespace GZIPmodel
                 mmre.Set();
             } , mmre);
 
-
-
             // ReSharper disable once CoVariantArrayConversion
             WaitHandle.WaitAll(manualEvents.ToArray());
 

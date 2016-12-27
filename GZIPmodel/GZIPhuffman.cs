@@ -14,7 +14,7 @@ namespace GZIPmodel
 
     //--------------------------------------------------------数据类型定义------------------------------------------------------------
 
-        private const uint assertLength = 500000; 
+        private const uint assertLength = 1000000; 
 
         /// <summary>
         /// 节点类定义
@@ -144,7 +144,7 @@ namespace GZIPmodel
         /// <summary>
         /// 返回当前列表中未被选择过的最小权值的数据索引
         /// </summary>
-        /// <returns></returns>
+        /// <returns></returns> 
         private int IndexOfWeightMin(IReadOnlyList<bool> isCreated , IReadOnlyList<uint> WeightList)
         {
             var indexOfMinValue = -1;
