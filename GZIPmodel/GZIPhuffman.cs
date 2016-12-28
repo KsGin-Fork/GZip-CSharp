@@ -14,7 +14,7 @@ namespace GZIPmodel
 
     //--------------------------------------------------------数据类型定义------------------------------------------------------------
 
-        private const uint assertLength = 2000000; 
+        private const uint assertLength = 800000; 
 
         /// <summary>
         /// 节点类定义
