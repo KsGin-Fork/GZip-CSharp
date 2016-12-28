@@ -14,7 +14,7 @@ namespace GZIPmodel
 
     //--------------------------------------------------------数据类型定义------------------------------------------------------------
 
-        private const uint assertLength = 500000; 
+        private const uint assertLength = 2000000; 
 
         /// <summary>
         /// 节点类定义
@@ -29,17 +29,17 @@ namespace GZIPmodel
             /// <summary>
             /// 双亲节点
             /// </summary>
-            internal GZIPhuffmanNode mPNode;
+            internal int mPNode;
 
             /// <summary>
             /// 左子节点
             /// </summary>
-            internal readonly GZIPhuffmanNode mLNode;
+            internal readonly int mLNode;
 
             /// <summary>
             /// 右子节点
             /// </summary>
-            internal readonly GZIPhuffmanNode mRNode;
+            internal readonly int mRNode;
 
             /// <summary>
             /// 构造方法
@@ -47,7 +47,7 @@ namespace GZIPmodel
             /// <param name="mPNode">双亲节点</param>
             /// <param name="mLNode">左孩子节点</param>
             /// <param name="mRNode">右孩子节点</param>
-            public GZIPhuffmanNode(GZIPhuffmanNode mPNode, GZIPhuffmanNode mLNode, GZIPhuffmanNode mRNode)
+            public GZIPhuffmanNode(int mPNode, int mLNode, int mRNode)
             {
                 this.mPNode = mPNode;
                 this.mLNode = mLNode;
@@ -107,7 +107,7 @@ namespace GZIPmodel
             foreach (var data in mValueWeight)
             {
                 //初始化一个左右子树和双亲节点都为空的节点加入到huffmanNodes列表中
-                mHuffmaGziPhuffmanNodes.Add(new GZIPhuffmanNode(null , null , null) {Value = data.Key});
+                mHuffmaGziPhuffmanNodes.Add(new GZIPhuffmanNode(-1 , -1 , -1) {Value = data.Key});
             }
             CreatHuffmanNode(isCreated , WeightList);                               //创建huffman树
             SetTransTable();                                                        //设置对照字典
@@ -127,24 +127,26 @@ namespace GZIPmodel
                 var sMinIndex = IndexOfWeightMin(isCreated, WeightList);
                 if (sMinIndex == -1) return;
                 isCreated[sMinIndex] = true;
-                var newNode = new GZIPhuffmanNode(null, mHuffmaGziPhuffmanNodes[fMinIndex], mHuffmaGziPhuffmanNodes[sMinIndex]);
+                var newNode = new GZIPhuffmanNode(-1, fMinIndex, sMinIndex);
                 //isCreated里添加新项
                 isCreated.Add(false);
                 //weightlist里添加新项
                 WeightList.Add(WeightList[fMinIndex] + WeightList[sMinIndex]);
-                //设置fMin 和 sMin的双亲节点
-                mHuffmaGziPhuffmanNodes[fMinIndex].mPNode = newNode;
-                mHuffmaGziPhuffmanNodes[sMinIndex].mPNode = newNode;
+
                 //mHuffmaGziPhuffmanNodes里添加新项
                 mHuffmaGziPhuffmanNodes.Add(newNode);
-                //递归处理
+
+                //设置fMin 和 sMin的双亲节点
+                mHuffmaGziPhuffmanNodes[fMinIndex].mPNode = mHuffmaGziPhuffmanNodes.Count - 1;
+                mHuffmaGziPhuffmanNodes[sMinIndex].mPNode = mHuffmaGziPhuffmanNodes.Count - 1;
+                
             }
         }
 
         /// <summary>
         /// 返回当前列表中未被选择过的最小权值的数据索引
         /// </summary>
-        /// <returns></returns>
+        /// <returns></returns> 
         private int IndexOfWeightMin(IReadOnlyList<bool> isCreated , IReadOnlyList<uint> WeightList)
         {
             var indexOfMinValue = -1;
@@ -181,10 +183,10 @@ namespace GZIPmodel
                     index = i;
                 }
             }
-            var curNode = mHuffmaGziPhuffmanNodes[index];
-            while (curNode.mPNode != null)
+            var curNode = index;
+            while (mHuffmaGziPhuffmanNodes[curNode].mPNode != -1)
             {
-                if (curNode.mPNode.mLNode != null && curNode == curNode.mPNode.mLNode)
+                if (mHuffmaGziPhuffmanNodes[mHuffmaGziPhuffmanNodes[curNode].mPNode].mLNode != -1 && curNode == mHuffmaGziPhuffmanNodes[mHuffmaGziPhuffmanNodes[curNode].mPNode].mLNode)
                 {
                     result.Insert(0 , '0');
                 }
@@ -192,7 +194,7 @@ namespace GZIPmodel
                 {
                     result.Insert(0, '1');
                 }
-                curNode = curNode.mPNode;
+                curNode = mHuffmaGziPhuffmanNodes[curNode].mPNode;
             }
             return result.ToString();
         }
@@ -291,19 +293,20 @@ namespace GZIPmodel
         {
             var result = new StringBuilder();
             var reList = new string[code.Length / assertLength + 1];
-            var manualEvents = new List<ManualResetEvent>();                  //处理线程同步
-
+            var manualEvents = new List<List<ManualResetEvent>> {new List<ManualResetEvent>()}; //处理线程同步
             for (var i = 0; i < code.Length / assertLength; i++)
             {
                 var mre = new ManualResetEvent(false);
-                manualEvents.Add(mre);
+                if (manualEvents[manualEvents.Count - 1].Count == 64)
+                {
+                    manualEvents.Add(new List<ManualResetEvent>());
+                }
+                manualEvents[manualEvents.Count - 1].Add(mre);
 
                 var i2 = i;
                 ThreadPool.QueueUserWorkItem(state =>
-                {
-                    Console.WriteLine("{0}段已经处理开始,待处理个数{1}" , i2 , (int)assertLength);
+                {                   
                     reList[i2] = decoding(code.Substring((int)(i2 * assertLength) , (int) assertLength));
-                    Console.WriteLine("{0}段已经处理完成", i2);
                     mre.Set();        //设置线程结束状态
 
                 } , mre);
@@ -312,26 +315,29 @@ namespace GZIPmodel
             
 
             var i1 = (int)(code.Length / assertLength);
-
+             
             var mmre = new ManualResetEvent(false);
-            manualEvents.Add(mmre);
+            if (manualEvents[manualEvents.Count - 1].Count == 64)
+            {
+                manualEvents.Add(new List<ManualResetEvent>());
+            }
+            manualEvents[manualEvents.Count - 1].Add(mmre);
             ThreadPool.QueueUserWorkItem(state =>
             {
-                Console.WriteLine("{0}段已经处理开始,待处理个数{1}",i1, code.Length % assertLength);
                 reList[i1] = decoding(code.Substring((int) (i1*assertLength)));
-                Console.WriteLine("{0}段已经处理完成", i1);
                 mmre.Set();
             } , mmre);
 
             // ReSharper disable once CoVariantArrayConversion
-            WaitHandle.WaitAll(manualEvents.ToArray());
-
-            Console.WriteLine("开始数据合并");
+            foreach (var v in manualEvents)
+            {
+                WaitHandle.WaitAll(v.ToArray());
+            }
+           
             foreach (var r in reList)
             {
                 result.Append(r);
             }
-            Console.WriteLine("数据合并完成");
             return result.ToString();
         }
     }

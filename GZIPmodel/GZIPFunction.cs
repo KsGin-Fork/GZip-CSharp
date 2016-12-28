@@ -121,8 +121,9 @@ namespace GZIPmodel
             //使用文本文件读取的字符串构造huffman
             Console.WriteLine("开始压缩......");
             var huff = new GZIPhuffman(str);
-            var b = huff.GZIPcoding(str, ref codingpar);    //获得解压码  这里有大量的时间消耗
-
+            Console.WriteLine("Huffman树构建成功");
+            var b = huff.GZIPcoding(str, ref codingpar);    //获得解压码 
+            Console.WriteLine("成功获得解码");
             //将每八个字节的01字符串编码转化成一个字节
             for (var i = 0; i < b.Length / 8 ; i++)
             {

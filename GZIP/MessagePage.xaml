@@ -8,7 +8,7 @@
       Title="MessagePage">
     <Viewbox Stretch="Fill">
         <Grid>
-            <Label Background="Bisque" Foreground="Crimson" VerticalAlignment="Center" FontSize="2" HorizontalAlignment="Center" Name="Message"></Label>
+            <Label Background="Bisque" Foreground="Crimson" VerticalAlignment="Center" FontSize="1" HorizontalAlignment="Center" Name="Message"></Label>
         </Grid>
     </Viewbox>
 </Page>

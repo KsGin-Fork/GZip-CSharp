@@ -28,7 +28,7 @@ namespace GZIP
         /// <param name="e"></param>
         private void ZIPpathFromSelectButton_OnClick(object sender, RoutedEventArgs e)
         {
-            var openFileLog = new OpenFileDialog {Filter = "文本文件(.txt)|*.txt|源文件(.souce)|*.souce"};
+            var openFileLog = new OpenFileDialog {Filter = "文本文件(.txt)|*.txt|源文件(.*)|*.*"};
             if (openFileLog.ShowDialog() == true)
             {
                 ZIPpathFrom.Text = openFileLog.FileName;
@@ -42,7 +42,7 @@ namespace GZIP
         /// <param name="e"></param>
         private void ZIPpathToSelectButton_OnClick(object sender, RoutedEventArgs e)
         {
-            var saveFileDialog = new SaveFileDialog {Filter = "压缩文件(.gzip)|*.gzip|压缩文件(.code)|*.code"};
+            var saveFileDialog = new SaveFileDialog {Filter = "压缩文件(.gzip)|*.gzip|压缩文件(.*)|*.*"};
             if (saveFileDialog.ShowDialog() == true)
             {
                 ZIPpathTo.Text = saveFileDialog.FileName;
@@ -56,7 +56,7 @@ namespace GZIP
         /// <param name="e"></param>
         private void UNZIPpathFromSelectButton_OnClick(object sender, RoutedEventArgs e)
         {
-            var openFileLog = new OpenFileDialog {Filter = "压缩文件(.gzip)|*.gzip|压缩文件(.code)|*.code"};
+            var openFileLog = new OpenFileDialog {Filter = "压缩文件(.gzip)|*.gzip|压缩文件(.*)|*.*"};
             if (openFileLog.ShowDialog() == true)
             {
                 UNZIPpathFrom.Text = openFileLog.FileName;
@@ -70,7 +70,7 @@ namespace GZIP
         /// <param name="e"></param>
         private void UNZIPpathToSelectButton_OnClick(object sender, RoutedEventArgs e)
         {
-            var saveFileDialog = new SaveFileDialog() {Filter = "文本文件(.txt)|*.txt|解压文件(.decode)|*.decode"};
+            var saveFileDialog = new SaveFileDialog() {Filter = "文本文件(.txt)|*.txt|解压文件(.*)|*.*"};
             if (saveFileDialog.ShowDialog() == true)
             {
                 UNZIPpathTo.Text = saveFileDialog.FileName;
@@ -92,11 +92,11 @@ namespace GZIP
                 {
                     GZIPFunction.GZIP(readFilePath, writeFilePath);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     Dispatcher.Invoke(() =>
                     {
-                        promPtWindow.Content = new MessagePage("文件地址不能为空");
+                        promPtWindow.Content = new MessagePage(ex.Message);
                     });
                     return;
                 }
@@ -125,11 +125,11 @@ namespace GZIP
                 {
                     GZIPFunction.UNGZIP(readFilePath, writeFilePath);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     Dispatcher.Invoke(() =>
                     {
-                        promPtWindow.Content = new MessagePage("文件地址不能为空");
+                        promPtWindow.Content = new MessagePage(ex.Message);
                     });
                     return;
                 }

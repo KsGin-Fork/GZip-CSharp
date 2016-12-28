@@ -25,14 +25,6 @@ namespace GZIPmodel
                     break;
                 case "ungzip":
                     GZIPFunction.UNGZIP(args[1], args[2]);
-                    //try
-                    //{
-                    //    GZIPFunction.UNGZIP(args[1], args[2]);
-                    //}
-                    //catch (Exception ex)
-                    //{
-                    //    Console.WriteLine(ex.Message);
-                    //}
                     break;
                 default:
                     Console.WriteLine("找不到此命令");

@@ -112,14 +112,11 @@ namespace GZIPmodel
             {
                 str = sr.ReadToEnd();
                 sr.Close();
-                Console.WriteLine("读入文件成功......");
             }
             //将文中的windows换行标准格式\r\n 替换为 \n
             str = Regex.Replace(str, "\r\n", "\n");
 
-            var start = Environment.TickCount;
             //使用文本文件读取的字符串构造huffman
-            Console.WriteLine("开始压缩......");
             var huff = new GZIPhuffman(str);
             var b = huff.GZIPcoding(str, ref codingpar);    //获得解压码  这里有大量的时间消耗
 
@@ -137,12 +134,7 @@ namespace GZIPmodel
                 }
             }
             bytes.Add(StringToUint(b.Substring(b.Length - b.Length % 8)));
-            Console.Write("压缩完毕......");
 
-            var cur = Environment.TickCount;
-            Console.WriteLine("花费时间{0}毫秒", cur - start);
-
-            Console.WriteLine("正在保存......");
 
             //制作解压参数
             var codingParStr = new StringBuilder();
@@ -159,7 +151,6 @@ namespace GZIPmodel
             bw.Close();
             bs.Close();
             fs.Close();
-            Console.WriteLine("任务已经完成!");
         }
                 
         /// <summary>
@@ -182,14 +173,12 @@ namespace GZIPmodel
                 sbPar.Append(ch);
                 ch = br.ReadChar();
             }
-            Console.WriteLine("已获取编码参数......");
             //获取正式编码部分
             var sbCod = new StringBuilder();
             while (br.BaseStream.Position != br.BaseStream.Length)
             {
                 sbCod.Append(DtoB(br.ReadByte()));
             }
-            Console.WriteLine("已获取编码......");
             //关闭流
             br.Close();
             bs.Close();
@@ -205,20 +194,12 @@ namespace GZIPmodel
             }
 
             //权值字典建立huffman
-            Console.WriteLine("开始还原压缩树......");
             var huff = new GZIPhuffman(valueWeight);
 
-            var start = Environment.TickCount;
-            Console.Write("开始解压......");
             var result = huff.GZIPdecoding(sbCod.ToString());
             result = Regex.Replace(result, "\n", "\r\n");
-
-            var cur = Environment.TickCount;
-
-            Console.WriteLine("花费时间{0}毫秒", cur - start);
             
             //写入应用
-            Console.WriteLine("正在写入文件......");
             var ifs = new FileStream(writeFilePath , FileMode.Create , FileAccess.Write);
             var ibs = new BufferedStream(ifs);
             var isw = new StreamWriter(ibs);
@@ -226,7 +207,6 @@ namespace GZIPmodel
             isw.Close();
             ibs.Close();
             ifs.Close();
-            Console.WriteLine("任务已完成");
         }
     }
 }
