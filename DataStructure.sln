@@ -1,8 +1,7 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
-MinimumVisualStudioVersion = 10.0.40219.1
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+# SharpDevelop 4.3
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GZIPmodel", "GZIPmodel\GZIPmodel.csproj", "{5B9AC5C6-1683-423D-9414-B95EC95FEDFB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GZIP", "GZIP\GZIP.csproj", "{1730FFB0-CC1B-4687-8586-7095604E336E}"

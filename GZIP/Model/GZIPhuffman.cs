@@ -261,7 +261,7 @@ namespace GZIPmodel
         public string GZIPcoding(string buf , ref Dictionary<char , uint> parm)
         {
             var lb = new List<char>(buf);
-            if (parm == null) throw new ArgumentNullException(nameof(parm));
+            if (parm == null) throw new ArgumentNullException();
             parm = mValueWeight;
             var sb = new StringBuilder();
             var resb = new StringBuilder();          

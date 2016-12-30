@@ -4,6 +4,10 @@ namespace GZIPmodel
 {
     internal class Program
     {
+    	/// <summary>
+    	/// 启动代码  可接受命令行启动
+    	/// </summary>
+    	/// <param name="args"> 命令行参数 </param>
         private static void Main(string[] args)
         {
             if (args.Length != 3)
@@ -30,6 +34,7 @@ namespace GZIPmodel
                     Console.WriteLine("找不到此命令");
                     break;
             }
+            
         }
     }
 }
